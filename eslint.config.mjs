@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Build-time Node utilities. CommonJS by design, never shipped.
+    "scripts/**",
   ]),
 ]);
 

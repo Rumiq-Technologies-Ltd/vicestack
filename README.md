@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ViceStack
 
-## Getting Started
+Technology and digital growth infrastructure for businesses in regulated,
+restricted and high-friction markets across the US and Canada.
 
-First, run the development server:
+Next.js 16 (App Router) · React 19 · TypeScript strict · Tailwind v4 · Supabase · Resend
+
+---
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local   # fill in Supabase and Resend, or leave blank
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The site runs without any environment variables. With Supabase unset, leads are
+validated and accepted but not stored — a warning is logged. With Resend unset,
+no notification is sent. Both are safe for local development; neither is safe
+for production.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Does |
+|---|---|
+| `npm run dev` | Dev server on :3000 |
+| `npm run build` | Production build (runs typecheck) |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `bash scripts/shot.sh /path name [w] [h]` | Full-page screenshot, sliced into review tiles |
+| `node scripts/optimize-images.cjs` | Resize and compress source images into `public/images` |
 
-## Learn More
+`scripts/shot.sh` uses headless Chrome, which enforces a minimum window width on
+Windows — capture mobile widths in a real browser rather than below ~500px.
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Apply supabase/migrations/0001_leads.sql to your Supabase project.
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+One `leads` table serves all three capture surfaces. Source-specific data —
+growth audit areas, or the full growth stack questionnaire — lives in `payload`.
+RLS is on with no policies: writes go through the service role key server-side,
+and nothing else can read the table.
 
-## Deploy on Vercel
+## Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See [docs/architecture.md](docs/architecture.md).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The short version: content lives in typed modules under `src/content`, and the
+routes, sitemap, JSON-LD, internal links and `llms.txt` all read from those same
+modules. Adding an industry is one object, not eight edits.
+
+## Design system
+
+Defined once in `src/app/globals.css`.
+
+The site is monochrome. Yellow, blue and red are **signals**, not decoration —
+yellow means discovery, blue means technology, red means friction. A section
+declares `data-signal` and everything inside recolours from it.
+
+Three colour roles, because a signal that works as a fill often fails as text:
+
+- `--signal` — fills, rules, oversized marks
+- `--accent` — the same idea used as type, always legible on the current ground
+- `--accent-ink` — type placed on top of a signal ground
+
+Yellow is never type on paper (~1.3:1). Red darkens for type on light and
+lightens for type on dark. Blue does the same. This is handled by the cascade,
+so using `text-accent` is always safe.
+
+## Placeholders
+
+Demo content is marked in the UI and inventoried in
+[src/content/PLACEHOLDERS.md](src/content/PLACEHOLDERS.md). Clear that list
+before launch. No performance figures, testimonials or client names are
+invented anywhere in this repo.
+
+## Legal
+
+The site makes no compliance or platform-approval guarantees, and gives no legal
+advice. Advertising copy always carries a hedge — see `HEDGE` in
+`src/content/site.ts`.
